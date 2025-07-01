@@ -77,7 +77,7 @@ def get_tracer(nside, tracer_config):
                     if not included_in_map:
                         maps *= mask
 
-            tracer = MapTracer(bin_name, maps, mask, beam=beam, masked_on_input=True)
+            tracer = MapTracer(bin_name, maps, full_mask, beam=beam, masked_on_input=True)
 
         elif tracer_type == "catalog":
             cat_file = path.join(data_dir, tracer_config["catalog"]["file"].format(bin=bin_i))
