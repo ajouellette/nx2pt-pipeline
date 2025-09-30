@@ -41,8 +41,7 @@ def bin_theory_cl(theory_cl, bpws, ell=None, fix_dipole=True, fix_monopole=True,
             theory_cl = np.hstack([theory_cl, np.zeros(nells - len(theory_cl))])
         else:
             raise ValueError("theory Cl has fewer ells than the bandpower windows.")
-    wsum = np.sum(bpws, axis=1)
-    return np.sum(np.expand_dims(theory_cl[:nells], 0) * bpws, axis=1) / wsum
+    return np.dot(bpws, theory_cl[:nells])
 
 
 def get_cl_dtypes(ncls):
