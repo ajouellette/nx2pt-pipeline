@@ -188,7 +188,11 @@ def compute_cls_cov(tracers, xspectra, compute_cov=True, compute_interbin_cov=Tr
         autos_only = xspec.get("autos_only", False)
         save_nl = xspec.get("save_nl", False)
         # get binning
-        bins = get_ell_bins(tracer1[0].nside, xspec["binning"])
+        if hasattr(tracer1[0], "nside"):
+            nside = tracer1[0].nside
+        else:
+            nside = (tracer1[0].lmax + 1) / 3
+        bins = get_ell_bins(nside, xspec["binning"])
 
         # loop over all bins
         for i in range(len(tracer1)):
@@ -218,14 +222,14 @@ def compute_cls_cov(tracers, xspectra, compute_cov=True, compute_interbin_cov=Tr
                             if tracer1[i].spin == 0:
                                 pcl -= tracer1[i].noise_est
                             else:
-                                pcl[0] -= tracer1[i].noise_est
-                                pcl[-1] -= tracer1[i].noise_est
+                                pcl[0][tracer1[i].spin:] -= tracer1[i].noise_est
+                                pcl[-1][tracer1[i].spin:] -= tracer1[i].noise_est
                     cl = wksp.decouple_cell(pcl)
                     if save_nl:
                         # save nl templates (decoupled unit amplitude)
                         nl = np.zeros_like(pcl)
-                        nl[0] = 1
-                        nl[-1] = 1
+                        nl[0][tracer1[i].spin:] = 1
+                        nl[-1][tracer1[i].spin:] = 1
                         nl = wksp.decouple_cell(nl)
                         result["nls"][cl_key] = nl
                     # save quantities
