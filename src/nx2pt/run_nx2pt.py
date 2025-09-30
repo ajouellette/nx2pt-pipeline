@@ -128,6 +128,8 @@ def main():
                         help="overrides nside in config file")
     parser.add_argument("--no-cache", action="store_true",
                         help="Don't use the workspace cache")
+    parser.add_argument("--overwrite", action="store_true",
+                        help="Overwrite existing output files")
     args = parser.parse_args()
 
     config = preprocess_yaml(args.config_file)
@@ -155,6 +157,15 @@ def main():
             print(f"Warning! No output will be saved for the block {xspec_key}")
 
     for xspec_key in xspec_keys:
+        if "save_sacc" in config[xspec_key].keys():
+            if path.isfile(config[xspec_key]["save_sacc"]["file"].format(nside=nside)) and not args.overwrite:
+                print(f"output file for {xspec_key} already exists, skipping")
+                continue
+        if "save_npz" in config[xspec_key].keys():
+            if path.isfile(config[xspec_key]["save_npz"].format(nside=nside)) and not args.overwrite:
+                print(f"output file for {xspec_key} already exists, skipping")
+                continue
+
         # cross-spectra with their individual settings
         xspectra = config[xspec_key]["list"]
 
