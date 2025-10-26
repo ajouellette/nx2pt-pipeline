@@ -165,7 +165,7 @@ def compute_gaussian_cov(wksp_dir, nmt_field1a, nmt_field2a, nmt_field1b, nmt_fi
 
 
 def compute_cls_cov(tracers, xspectra, compute_cov=True, compute_interbin_cov=True,
-                    wksp_cache=None):
+                    wksp_cache=None, keep_wksps_in_mem=True):
     """
     Calculate all cross-spectra and covariances from a list of tracers.
 
@@ -211,7 +211,8 @@ def compute_cls_cov(tracers, xspectra, compute_cov=True, compute_interbin_cov=Tr
                     # save pcls and wksps for covariance calculation
                     with Timer("computing pcl..."):
                         pcl = nmt.compute_coupled_cell(tracer1[i].field, tracer2[j].field)
-                    wksps[cl_key] = wksp
+                    if keep_wksps_in_mem:
+                        wksps[cl_key] = wksp
                     # only subtract noise from auto-spectra
                     if subtract_noise and i == j and tracer1 == tracer2:
                         if not hasattr(tracer1[i], "noise_est"):

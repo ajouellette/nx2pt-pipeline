@@ -2,6 +2,7 @@ import argparse
 import os
 from os import path
 import sys
+import warnings
 import yaml
 import numpy as np
 import healpy as hp
@@ -41,8 +42,10 @@ def get_tracer(nside, tracer_config):
         if "beam" in tracer_config.keys():
             if tracer_config["beam"] == "pixwin":
                 beam = hp.pixwin(nside)
+            elif tracer_config["beam"] is None or tracer_config["beam"] == "None":
+                beam = None
             else:
-                beam_file = path.join(data_dir, config[key]["beam"].format(bin=bin_i, nside=nside))
+                beam_file = path.join(data_dir, tracer_config[key]["beam"].format(bin=bin_i, nside=nside))
                 beam = np.loadtxt(beam_file)
         else:
             beam = np.ones(3*nside)
@@ -86,6 +89,7 @@ def get_tracer(nside, tracer_config):
             try:
                 weights = get_ul_key(catalog, "weight")
             except KeyError:
+                warnings.warn("Did not find a 'weight' column, assuming uniform weights")
                 weights = np.ones(len(catalog))
             if "fields" in tracer_config["catalog"].keys():
                 fields = [catalog[f] for f in tracer_config["catalog"]["fields"]]
@@ -130,6 +134,7 @@ def main():
                         help="Don't use the workspace cache")
     parser.add_argument("--overwrite", action="store_true",
                         help="Overwrite existing output files")
+    parser.add_argument("--low-mem", action="store_true")
     args = parser.parse_args()
 
     config = preprocess_yaml(args.config_file)
@@ -186,7 +191,8 @@ def main():
 
         # calculate everything
         result = compute_cls_cov(tracers, xspectra, compute_cov=calc_cov,
-                                 compute_interbin_cov=calc_interbin_cov, wksp_cache=wksp_dir)
+                                 compute_interbin_cov=calc_interbin_cov, wksp_cache=wksp_dir,
+                                 keep_wksps_in_mem=not args.low_mem)
 
         data = ClData(**result, tracers=tracers)
 
