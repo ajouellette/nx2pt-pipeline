@@ -20,7 +20,7 @@ from .utils import Timer, preprocess_yaml
 def get_tracer(nside, tracer_config):
     """Load tracer information."""
     name = tracer_config["name"]
-    data_dir = tracer_config["data_dir"]
+    data_dir = tracer_config["data_dir"].format(nside=nside)
     if "healpix" in tracer_config.keys():
         tracer_type = "healpix"
     elif "catalog" in tracer_config.keys():
